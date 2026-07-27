@@ -1,0 +1,128 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  name         String
+  createdAt    DateTime @default(now())
+
+  memberships Membership[]
+  auditLogs   AuditLog[]
+}
+
+model Project {
+  id        String   @id @default(cuid())
+  name      String
+  slug      String   @unique
+  createdAt DateTime @default(now())
+
+  memberships  Membership[]
+  environments Environment[]
+  flags        Flag[]
+  auditLogs    AuditLog[]
+}
+
+model Membership {
+  id        String   @id @default(cuid())
+  role      Role     @default(MEMBER)
+  userId    String
+  createdAt DateTime @default(now())
+  projectId String
+
+  user    User    @relation(fields: [userId], references: [id])
+  project Project @relation(fields: [projectId], references: [id])
+
+  @@unique([userId, projectId])
+}
+
+model Environment {
+  id        String  @id @default(cuid())
+  name      String
+  key       String
+  projectId String
+  project   Project @relation(fields: [projectId], references: [id])
+
+  flagStates FlagState[]
+  apiKeys    ApiKey[]
+  createdAt  DateTime    @default(now())
+
+  @@unique([projectId, key])
+}
+
+model Flag {
+  id          String   @id @default(cuid())
+  key         String
+  description String?
+  projectId   String
+  createdAt   DateTime @default(now())
+
+  project    Project     @relation(fields: [projectId], references: [id])
+  flagStates FlagState[]
+}
+
+model FlagState {
+  id            String      @id @default(cuid())
+  flagId        String
+  environmentId String
+  flag          Flag        @relation(fields: [flagId], references: [id])
+  environment   Environment @relation(fields: [environmentId], references: [id])
+
+  enabled        Boolean  @default(false)
+  rolloutPercent Int      @default(0)
+  rules          Json     @default("[]")
+  updatedAt      DateTime @updatedAt
+
+  @@unique([flagId, environmentId])
+}
+
+model ApiKey {
+  id         String     @id @default(cuid())
+  key        String     @unique @default(cuid())
+  label      String
+  type       ApiKeyType @default(SERVER)
+  revoked    Boolean    @default(false)
+  lastUsedAt DateTime?
+  createdAt  DateTime   @default(now())
+
+  environmentId String
+  environment   Environment @relation(fields: [environmentId], references: [id])
+}
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  action     String
+  targetType String
+  targetId   String
+  before     Json?
+  after      Json?
+  createdAt  DateTime @default(now())
+
+  projectId String
+  project   Project @relation(fields: [projectId], references: [id])
+  userId    String
+  user      User    @relation(fields: [userId], references: [id])
+}
+
+enum Role {
+  OWNER
+  ADMIN
+  MEMBER
+}
+
+enum ApiKeyType {
+  SERVER
+  CLIENT
+}
