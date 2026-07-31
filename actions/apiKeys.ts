@@ -1,24 +1,11 @@
 "use server"
 
-import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server"
+import { getCurrentUser } from "@/lib/auth";
 import prisma from "@/lib/db"
 
 
 export async function createApiKey(environmentId: string, label:string, type: "SERVER" | "CLIENT"){
-    const { getUser } = getKindeServerSession();
-    const kindeUser = await getUser();
-
-     if (!kindeUser) {
-        throw new Error("UNAUTHORIZED");
-    }
-
-    const user = await prisma.user.findUnique({
-     where: { kindeId: kindeUser.id },
-    });
-
-    if (!user) {
-        throw new Error("USER_NOT_FOUND");
-     }
+    const user = await getCurrentUser()
 
     const environment = await prisma.environment.findUnique({
         where:{id:environmentId},

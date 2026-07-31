@@ -1,6 +1,7 @@
 "use server";
 import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
 import prisma from "@/lib/db";
+import { getCurrentUser } from "@/lib/auth";
 
 function slugify(name:string):string{
     return name
@@ -12,20 +13,7 @@ function slugify(name:string):string{
 
 export async function createProject(name:string){
 
-    const {getUser} = getKindeServerSession();
-    const kindeUser = await getUser()
-
-    if(!kindeUser){
-        throw new Error("UNAUTHORIZED")
-    }
-
-    const user = await prisma.user.findUnique({
-        where:{kindeId:kindeUser.id}
-    })
-
-    if(!user){
-        throw new Error("User not found")
-    }
+    const user = await getCurrentUser()
 
     const baseSlug = slugify(name)
     let slug = baseSlug
