@@ -198,6 +198,7 @@ export type FlagOrderByWithRelationInput = {
 
 export type FlagWhereUniqueInput = Prisma.AtLeast<{
   id?: string
+  projectId_key?: Prisma.FlagProjectIdKeyCompoundUniqueInput
   AND?: Prisma.FlagWhereInput | Prisma.FlagWhereInput[]
   OR?: Prisma.FlagWhereInput[]
   NOT?: Prisma.FlagWhereInput | Prisma.FlagWhereInput[]
@@ -207,7 +208,7 @@ export type FlagWhereUniqueInput = Prisma.AtLeast<{
   createdAt?: Prisma.DateTimeFilter<"Flag"> | Date | string
   project?: Prisma.XOR<Prisma.ProjectScalarRelationFilter, Prisma.ProjectWhereInput>
   flagStates?: Prisma.FlagStateListRelationFilter
-}, "id">
+}, "id" | "projectId_key">
 
 export type FlagOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
@@ -298,6 +299,11 @@ export type FlagListRelationFilter = {
 
 export type FlagOrderByRelationAggregateInput = {
   _count?: Prisma.SortOrder
+}
+
+export type FlagProjectIdKeyCompoundUniqueInput = {
+  projectId: string
+  key: string
 }
 
 export type FlagCountOrderByAggregateInput = {

@@ -71,6 +71,8 @@ model Flag {
 
   project    Project     @relation(fields: [projectId], references: [id])
   flagStates FlagState[]
+
+  @@unique([projectId, key])
 }
 
 model FlagState {
