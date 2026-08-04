@@ -3,7 +3,7 @@
 import { getCurrentUser } from "@/lib/auth";
 import prisma from "@/lib/db";
 
-export async function creatFlag(projectId:string,key:string,description?:string){
+export async function createFlag(projectId:string,key:string,description?:string){
     const user = await getCurrentUser()
 
   const membership = await prisma.membership.findUnique({
