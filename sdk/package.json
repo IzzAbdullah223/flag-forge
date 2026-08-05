@@ -1,0 +1,20 @@
+{
+  "name": "flag-forge-sdk",
+  "version": "1.0.0",
+  "type":"module",
+  "description": "Official SDK for Flag Forge — a feature flag evaluation client",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc"
+  },
+  "keywords": [
+    "feature-flags",
+    "flags"
+  ],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "typescript": "^7.0.2"
+  }
+}
