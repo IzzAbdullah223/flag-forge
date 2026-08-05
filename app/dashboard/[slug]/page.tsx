@@ -5,6 +5,7 @@ import { createFlag } from "@/actions/flags";
 import { revalidatePath } from "next/cache";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { createApiKey } from "@/actions/apiKeys";
 
 type ProjectPageProps = {
     params: Promise<{slug:string}>;
@@ -14,10 +15,13 @@ export default async function ProjectPage({params}:ProjectPageProps){
     const {slug} = await params;
     const user = await getCurrentUser()
 
-    const project = await prisma.project.findUnique({
-        where:{slug},
-        include:{environments:true,flags:true}
-    })
+const project = await prisma.project.findUnique({
+  where: { slug },
+  include: {
+    environments: { include: { apiKeys: true } },
+    flags: true,
+  },
+});
 
     if(!project){
         notFound()
@@ -53,6 +57,18 @@ export default async function ProjectPage({params}:ProjectPageProps){
     revalidatePath(`/dashboard/${slug}`)
   }
 
+  async function createApiKeyFromForm(formData:FormData){
+    "use server"
+    const environmentId = String(formData.get("environmentId")?? "")
+    const label = String(formData.get("label")?? "")
+    const type = String (formData.get("type")?? "SERVER") as "SERVER" | "CLIENT";
+
+    if (!environmentId || !label) return;
+
+    await createApiKey(environmentId,label,type)
+    revalidatePath(`/dashboard/${slug}`);
+  }
+
   return (
     <div>
       <h1>{project.name}</h1>
@@ -63,7 +79,32 @@ export default async function ProjectPage({params}:ProjectPageProps){
       ) : (
         <ul>
           {project.environments.map((env) => (
-            <li key={env.id}>{env.name} ({env.key})</li>
+            <li key={env.id}>
+              <p>{env.name} ({env.key})</p>
+
+              <p>API Keys:</p>
+              {env.apiKeys.length === 0 ? (
+                <p>No API keys yet.</p>
+              ) : (
+                <ul>
+                  {env.apiKeys.map((apiKey) => (
+                    <li key={apiKey.id}>
+                      {apiKey.label} ({apiKey.type}): {apiKey.key}
+                    </li>
+                  ))}
+                </ul>
+              )}
+
+              <form action={createApiKeyFromForm}>
+                <input type="hidden" name="environmentId" value={env.id} />
+                <input type="text" name="label" placeholder="Key label" required />
+                <select name="type" defaultValue="SERVER">
+                  <option value="SERVER">Server</option>
+                  <option value="CLIENT">Client</option>
+                </select>
+                <button type="submit">Create API Key</button>
+              </form>
+            </li>
           ))}
         </ul>
       )}
