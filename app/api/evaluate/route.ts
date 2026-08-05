@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/db";
 import { evaluateFlag, FlagStateInput } from "@/lib/evaluation/evaluator";
 import { UserContext } from "@/lib/evaluation/rules";
+import { RuleGroup } from "@/lib/evaluation/rules";
 
 export async function POST(req: NextRequest) {
   const authHeader = req.headers.get("authorization");
@@ -56,11 +57,14 @@ export async function POST(req: NextRequest) {
 
   const flagState = flag.flagStates[0];
 
-  const input: FlagStateInput = {
-    enabled: flagState.enabled,
-    rolloutPercent: flagState.rolloutPercent,
-    rules: flagState.rules as any,
-  };
+const rawRules = flagState.rules;
+const rules = Array.isArray(rawRules) ? null : (rawRules as RuleGroup | null);
+
+const input: FlagStateInput = {
+  enabled: flagState.enabled,
+  rolloutPercent: flagState.rolloutPercent,
+  rules,
+};
 
   const result = evaluateFlag(flagKey, input, user as UserContext);
 

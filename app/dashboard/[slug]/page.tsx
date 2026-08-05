@@ -81,7 +81,7 @@ const project = await prisma.project.findUnique({
           {project.environments.map((env) => (
             <li key={env.id}>
               <p>{env.name} ({env.key})</p>
-
+            <hr></hr>
               <p>API Keys:</p>
               {env.apiKeys.length === 0 ? (
                 <p>No API keys yet.</p>
@@ -94,6 +94,7 @@ const project = await prisma.project.findUnique({
                   ))}
                 </ul>
               )}
+              
 
               <form action={createApiKeyFromForm}>
                 <input type="hidden" name="environmentId" value={env.id} />
@@ -113,7 +114,7 @@ const project = await prisma.project.findUnique({
         <input type="text" name="key" placeholder="Environment key" required />
         <button type="submit">Add Environment</button>
       </form>
-
+      <hr></hr>
       <h2>Flags</h2>
       {project.flags.length === 0 ? (
         <p>No flags yet.</p>
