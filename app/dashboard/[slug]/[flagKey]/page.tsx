@@ -4,6 +4,7 @@ import { getOrCreateFlagState, updateFlagState } from "@/actions/flagStates";
 import { revalidatePath } from "next/cache";
 import { notFound } from "next/navigation";
 import RulesEditor from "@/components/RulesEditor";
+import FlagStateControls from "@/components/FlagStateControls";
 import { RuleGroup } from "@/lib/evaluation/rules";
 
 type FlagPageProps = {
@@ -19,25 +20,19 @@ export default async function FlagPage({ params }: FlagPageProps) {
     include: { environments: true },
   });
 
-  if (!project) {
-    notFound();
-  }
+  if (!project) notFound();
 
   const membership = await prisma.membership.findUnique({
     where: { userId_projectId: { userId: user.id, projectId: project.id } },
   });
 
-  if (!membership) {
-    notFound();
-  }
+  if (!membership) notFound();
 
   const flag = await prisma.flag.findUnique({
     where: { projectId_key: { projectId: project.id, key: flagKey } },
   });
 
-  if (!flag) {
-    notFound();
-  }
+  if (!flag) notFound();
 
   const flagStates = await Promise.all(
     project.environments.map((env) => getOrCreateFlagState(flag!.id, env.id))
@@ -55,42 +50,52 @@ export default async function FlagPage({ params }: FlagPageProps) {
 
   return (
     <div>
-      <h1>{flag.key}</h1>
-      {flag.description ? <p>{flag.description}</p> : null}
+      <div className="mb-10">
+        <p className="font-mono-key text-xs text-[var(--text-muted)] mb-1">{project.name}</p>
+        <h1 className="font-mono-key text-2xl font-semibold">{flag.key}</h1>
+        {flag.description && (
+          <p className="text-[var(--text-muted)] text-sm mt-1">{flag.description}</p>
+        )}
+      </div>
 
-      <h2>Environments</h2>
-      {project.environments.map((env, i) => {
-        const state = flagStates[i];
-        return (
-          <div key={env.id}>
-            <form action={updateFlagStateFromForm}>
-              <input type="hidden" name="environmentId" value={env.id} />
-              <p>{env.name}</p>
-              <label>
-                <input type="checkbox" name="enabled" defaultChecked={state.enabled} />
-                Enabled
-              </label>
-              <label>
-                Rollout %:
-                <input
-                  type="number"
-                  name="rolloutPercent"
-                  defaultValue={state.rolloutPercent}
-                  min={0}
-                  max={100}
-                />
-              </label>
-              <button type="submit">Save</button>
-            </form>
+      <div className="space-y-6">
+        {project.environments.map((env, i) => {
+          const state = flagStates[i];
+          const rules = Array.isArray(state.rules) ? null : (state.rules as RuleGroup | null);
 
-<RulesEditor
-  flagId={flag.id}
-  environmentId={env.id}
-  initialRules={Array.isArray(state.rules) ? null : (state.rules as RuleGroup | null)}
-/>
-          </div>
-        );
-      })}
+          return (
+            <div
+              key={env.id}
+              className="border border-[var(--border)] bg-[var(--panel)] rounded-xl overflow-hidden"
+            >
+              <div className="px-6 py-5 border-b border-[var(--border)]">
+                <p className="font-medium">{env.name}</p>
+                <p className="font-mono-key text-xs text-[var(--text-muted)]">{env.key}</p>
+              </div>
+
+              <form action={updateFlagStateFromForm} className="px-6 py-6 border-b border-[var(--border)]">
+                <div className="flex items-end justify-between gap-8">
+                  <FlagStateControls
+                    environmentId={env.id}
+                    initialEnabled={state.enabled}
+                    initialRolloutPercent={state.rolloutPercent}
+                  />
+                  <button
+                    type="submit"
+                    className="text-sm px-5 py-2 rounded-md bg-[var(--signal-green)] text-black font-medium hover:opacity-90 transition-opacity whitespace-nowrap"
+                  >
+                    Save
+                  </button>
+                </div>
+              </form>
+
+              <div className="px-6 py-6">
+                <RulesEditor flagId={flag.id} environmentId={env.id} initialRules={rules} />
+              </div>
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }

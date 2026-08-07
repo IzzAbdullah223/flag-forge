@@ -2,7 +2,7 @@
 import { getCurrentUser } from "@/lib/auth"
 import prisma from "@/lib/db"
 
-export async function createEnvionment(projectId:string,key:string,name:string){
+export async function createEnvironment(projectId:string,key:string,name:string){
     const user = await getCurrentUser()
 
     const memberShip = await prisma.membership.findUnique({
