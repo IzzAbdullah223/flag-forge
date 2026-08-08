@@ -7,6 +7,7 @@ import { revalidatePath } from "next/cache";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Server, KeyRound, Flag as FlagIcon, Plus, ArrowRight } from "lucide-react";
+import ApiKeyDisplay from "@/components/ApiKeyDisplay";
 
 export const dynamic = "force-dynamic";
 
@@ -116,9 +117,7 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
                             {apiKey.type}
                           </span>
                         </div>
-                        <span className="font-mono-key text-xs text-[var(--text-muted)]">
-                          {apiKey.key}
-                        </span>
+                          <ApiKeyDisplay apiKeyValue={apiKey.key} />
                       </li>
                     ))}
                   </ul>
