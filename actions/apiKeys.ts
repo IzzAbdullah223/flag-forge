@@ -1,6 +1,6 @@
 "use server"
 
-import { getCurrentUser } from "@/lib/auth";
+import { getCurrentUser, assertMembership } from "@/lib/auth";
 import prisma from "@/lib/db"
 
 
@@ -29,4 +29,22 @@ export async function createApiKey(environmentId: string, label:string, type: "S
   })
 
   return apiKey
+}
+
+
+export async function deleteApiKey(apiKeyId: string) {
+  const user = await getCurrentUser();
+
+  const apiKey = await prisma.apiKey.findUnique({
+    where: { id: apiKeyId },
+    include: { environment: true },
+  });
+
+  if (!apiKey) {
+    throw new Error("NOT_FOUND");
+  }
+
+  await assertMembership(user.id, apiKey.environment.projectId);
+
+  await prisma.apiKey.delete({ where: { id: apiKeyId } });
 }

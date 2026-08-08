@@ -10,6 +10,10 @@ import { Server, KeyRound, Flag as FlagIcon, Plus, ArrowRight } from "lucide-rea
 import ApiKeyDisplay from "@/components/ApiKeyDisplay";
 import DeleteProjectButton from "@/components/DeleteProjectButton";
 import AuditLogList from "@/components/AuditLogList";
+import { deleteEnvironment } from "@/actions/environments";
+import { deleteFlag } from "@/actions/flags";
+import { deleteApiKey } from "@/actions/apiKeys";
+import ConfirmDeleteButton from "@/components/ConfirmDeleteButton";
 
 export const dynamic = "force-dynamic";
 
@@ -85,7 +89,7 @@ return (
 
     <div className="flex gap-10 items-start">
       <div className="flex-1 min-w-0">
-        {/* env*/}
+        {/* Environments */}
         <section className="mb-12">
           <div className="flex items-center gap-2 mb-4">
             <Server size={16} className="text-[var(--text-muted)]" />
@@ -108,6 +112,11 @@ return (
                       <p className="font-medium">{env.name}</p>
                       <p className="font-mono-key text-xs text-[var(--text-muted)]">{env.key}</p>
                     </div>
+                    <ConfirmDeleteButton
+                      label="Delete"
+                      itemName={env.name}
+                      onDelete={deleteEnvironment.bind(null, env.id)}
+                    />
                   </div>
 
                   <div className="flex items-center gap-1.5 mb-2">
@@ -132,7 +141,14 @@ return (
                               {apiKey.type}
                             </span>
                           </div>
-                          <ApiKeyDisplay apiKeyValue={apiKey.key} />
+                          <div className="flex items-center gap-3">
+                            <ApiKeyDisplay apiKeyValue={apiKey.key} />
+                            <ConfirmDeleteButton
+                              label="Revoke"
+                              itemName={apiKey.label}
+                              onDelete={deleteApiKey.bind(null, apiKey.id)}
+                            />
+                          </div>
                         </li>
                       ))}
                     </ul>
@@ -192,7 +208,7 @@ return (
           </form>
         </section>
 
-        {/*  flags */}
+        {/* Flags */}
         <section>
           <div className="flex items-center gap-2 mb-4">
             <FlagIcon size={16} className="text-[var(--text-muted)]" />
@@ -207,21 +223,27 @@ return (
             <ul className="grid gap-2 mb-4">
               {project.flags.map((flag) => (
                 <li key={flag.id}>
-                  <Link
-                    href={`/dashboard/${slug}/${flag.key}`}
-                    className="group flex items-center justify-between border border-[var(--border)] bg-[var(--panel)] rounded-lg px-4 py-3 hover:border-[var(--signal-green)] transition-colors"
-                  >
-                    <div>
+                  <div className="group flex items-center justify-between border border-[var(--border)] bg-[var(--panel)] rounded-lg px-4 py-3 hover:border-[var(--signal-green)] transition-colors">
+                    <Link href={`/dashboard/${slug}/${flag.key}`} className="flex-1 min-w-0">
                       <p className="font-mono-key text-sm">{flag.key}</p>
                       {flag.description && (
                         <p className="text-xs text-[var(--text-muted)] mt-0.5">{flag.description}</p>
                       )}
+                    </Link>
+                    <div className="flex items-center gap-3 ml-4">
+                      <ConfirmDeleteButton
+                        label="Delete"
+                        itemName={flag.key}
+                        onDelete={deleteFlag.bind(null, flag.id)}
+                      />
+                      <Link href={`/dashboard/${slug}/${flag.key}`}>
+                        <ArrowRight
+                          size={15}
+                          className="text-[var(--text-muted)] group-hover:text-[var(--signal-green)] group-hover:translate-x-0.5 transition-all"
+                        />
+                      </Link>
                     </div>
-                    <ArrowRight
-                      size={15}
-                      className="text-[var(--text-muted)] group-hover:text-[var(--signal-green)] group-hover:translate-x-0.5 transition-all"
-                    />
-                  </Link>
+                  </div>
                 </li>
               ))}
             </ul>

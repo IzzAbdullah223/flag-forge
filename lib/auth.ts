@@ -19,3 +19,15 @@ export async function getCurrentUser() {
 
   return user;
 }
+
+export async function assertMembership(userId: string, projectId: string) {
+  const membership = await prisma.membership.findUnique({
+    where: { userId_projectId: { userId, projectId } },
+  });
+
+  if (!membership) {
+    throw new Error("FORBIDDEN");
+  }
+
+  return membership;
+}
