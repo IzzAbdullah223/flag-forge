@@ -14,6 +14,8 @@ async function assertMembership(userId: string, projectId: string) {
   if (!membership) {
     throw new Error("FORBIDDEN");
   }
+
+  return membership;
 }
 
 export async function getOrCreateFlagState(flagId: string, environmentId: string) {
@@ -59,11 +61,27 @@ export async function updateFlagState(
 
   await assertMembership(user.id, flag.projectId);
 
+  const before = await prisma.flagState.findUnique({
+    where: { flagId_environmentId: { flagId, environmentId } },
+  });
+
   const flagState = await prisma.flagState.update({
     where: { flagId_environmentId: { flagId, environmentId } },
     data: {
       ...updates,
       rules: updates.rules === null ? Prisma.JsonNull : (updates.rules as Prisma.InputJsonValue | undefined),
+    },
+  });
+
+  await prisma.auditLog.create({
+    data: {
+      action: "FLAG_STATE_UPDATED",
+      targetType: "FlagState",
+      targetId: flagState.id,
+      before: before ? JSON.parse(JSON.stringify(before)) : Prisma.JsonNull,
+      after: JSON.parse(JSON.stringify(flagState)),
+      projectId: flag.projectId,
+      userId: user.id,
     },
   });
 
