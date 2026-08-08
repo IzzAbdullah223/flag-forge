@@ -76,7 +76,7 @@ export async function updateFlagState(
   await prisma.auditLog.create({
     data: {
       action: "FLAG_STATE_UPDATED",
-      targetType: "FlagState",
+      targetType: flag.key,
       targetId: flagState.id,
       before: before ? JSON.parse(JSON.stringify(before)) : Prisma.JsonNull,
       after: JSON.parse(JSON.stringify(flagState)),
