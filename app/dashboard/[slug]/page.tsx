@@ -8,6 +8,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Server, KeyRound, Flag as FlagIcon, Plus, ArrowRight } from "lucide-react";
 import ApiKeyDisplay from "@/components/ApiKeyDisplay";
+import DeleteProjectButton from "@/components/DeleteProjectButton";
 
 export const dynamic = "force-dynamic";
 
@@ -65,10 +66,13 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
 
   return (
     <div>
-      <div className="mb-10">
-        <p className="font-mono-key text-xs text-[var(--text-muted)] mb-1">{project.slug}</p>
-        <h1 className="text-2xl font-semibold">{project.name}</h1>
-      </div>
+<div className="mb-10 flex items-center justify-between">
+  <div>
+    <p className="font-mono-key text-xs text-[var(--text-muted)] mb-1">{project.slug}</p>
+    <h1 className="text-2xl font-semibold">{project.name}</h1>
+  </div>
+  <DeleteProjectButton projectId={project.id} projectName={project.name} />
+</div>
 
       {/* Environments */}
       <section className="mb-12">

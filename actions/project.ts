@@ -36,3 +36,26 @@ export async function createProject(name:string){
 
     return project
 }
+
+
+export async function deleteProject(projectId: string) {
+  const user = await getCurrentUser();
+
+  const membership = await prisma.membership.findUnique({
+    where: { userId_projectId: { userId: user.id, projectId } },
+  });
+
+  if (!membership || membership.role !== "OWNER") {
+    throw new Error("FORBIDDEN");
+  }
+
+  await prisma.$transaction([
+    prisma.auditLog.deleteMany({ where: { projectId } }),
+    prisma.flagState.deleteMany({ where: { flag: { projectId } } }),
+    prisma.apiKey.deleteMany({ where: { environment: { projectId } } }),
+    prisma.flag.deleteMany({ where: { projectId } }),
+    prisma.environment.deleteMany({ where: { projectId } }),
+    prisma.membership.deleteMany({ where: { projectId } }),
+    prisma.project.delete({ where: { id: projectId } }),
+  ]);
+}
