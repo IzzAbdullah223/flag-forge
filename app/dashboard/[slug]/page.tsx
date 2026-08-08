@@ -8,6 +8,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Server, KeyRound, Flag as FlagIcon, Plus, ArrowRight } from "lucide-react";
 
+export const dynamic = "force-dynamic";
+
 type ProjectPageProps = {
   params: Promise<{ slug: string }>;
 };

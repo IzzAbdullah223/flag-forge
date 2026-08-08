@@ -7,6 +7,8 @@ import RulesEditor from "@/components/RulesEditor";
 import FlagStateControls from "@/components/FlagStateControls";
 import { RuleGroup } from "@/lib/evaluation/rules";
 
+export const dynamic = "force-dynamic";
+
 type FlagPageProps = {
   params: Promise<{ slug: string; flagKey: string }>;
 };
