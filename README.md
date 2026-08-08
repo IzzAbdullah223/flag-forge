@@ -65,6 +65,50 @@ A feature flag platform for rolling out features gradually, targeting the right 
 - [@prisma/adapter-pg](https://www.prisma.io/docs/orm/overview/databases/postgresql) – Driver adapter for Prisma's Postgres connections.
 - [lucide-react](https://lucide.dev) – for icons.
 
+
+## Using the SDK
+
+---
+
+the SDK lives in `/sdk` as a standalone package. to try it in the live deployment:
+
+```bash
+cd sdk
+npm install
+npm run build
+```
+
+create a project, environment, flag, and API key on the [live dashboard](https://flag-forge-tawny.vercel.app), then create a small script,  example `sdk/test.mjs`:
+
+```js
+import { FlagForgeClient } from "./dist/index.js";
+
+const client = new FlagForgeClient({
+  apiKey: "YOUR_API_KEY",
+  baseUrl: "https://flag-forge-tawny.vercel.app",
+});
+
+const result = await client.getFlag("your-flag-key", {
+  userId: "test-user-1",
+  country: "AE",
+});
+
+console.log(result);
+// { flagKey: "your-flag-key", enabled: true, reason: "ROLLOUT" }
+
+const unsubscribe = await client.subscribe((event) => {
+  console.log("flag changed:", event.flagKey);
+});
+```
+
+run  it:
+
+```bash
+node test.mjs
+```
+
+`getFlag` returns the current evaluation for that flag and user. `subscribe` opens a live connection and calls the callback whenever a flag changes in that environment — this works reliably on local dev or docker, but not on the live vercel deployment, since vercel serverless functions don't share memory betwen invocations
+
 ## how to run locally 
 
 ---
