@@ -20,7 +20,7 @@ A feature flag platform for rolling out features gradually, targeting the right 
 
 ![Project View](./screenshots/project-view.png)
 
-### flag detial
+### flag detail
 
 ![Flag Detail](./screenshots/flag-detail.png)
 
