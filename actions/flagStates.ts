@@ -5,6 +5,7 @@ import prisma from "@/lib/db";
 import { RuleGroup } from "@/lib/evaluation/rules";
 import { Prisma } from "@/generated/prisma/client";
 import { broadcastFlagChange } from "@/lib/sse";
+import { uploadAuditLogSnapshot } from "@/lib/s3";
 
 async function assertMembership(userId: string, projectId: string) {
   const membership = await prisma.membership.findUnique({
@@ -73,7 +74,7 @@ export async function updateFlagState(
     },
   });
 
-  await prisma.auditLog.create({
+  const auditEntry = await prisma.auditLog.create({
     data: {
       action: "FLAG_STATE_UPDATED",
       targetType: flag.key,
@@ -84,6 +85,8 @@ export async function updateFlagState(
       userId: user.id,
     },
   });
+
+  await uploadAuditLogSnapshot(auditEntry);
 
   broadcastFlagChange(environmentId, flag.key);
 
